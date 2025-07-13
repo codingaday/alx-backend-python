@@ -1,5 +1,7 @@
 import sqlite3
 import functools
+from datetime import datetime
+
 #3rd week of Python Generators
 # conn = sqlite3.connect('users.db')
 # cursor = conn.cursor()
@@ -28,7 +30,13 @@ def log_queries(func):
         print(f"[SQL LOG] Executing query: {query}")
 
         # Call the actual function
+        start_time = datetime.now()
+
         result = func(*args, **kwargs)
+        
+        end_time = datetime.now()
+        duration = (end_time - start_time).total_seconds()
+        print(f"[SQL LOG] Query executed in {duration:.4f} seconds")
 
         return result
     return wrapper
