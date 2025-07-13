@@ -32,7 +32,7 @@ def with_db_connection(func):
     
     return wrapper
 
-# ✅ Caching decorator
+# Caching decorator
 def cache_query(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -54,7 +54,7 @@ def cache_query(func):
         return result
     return wrapper
 
-# ✅ Function to fetch users, now with caching
+# Function to fetch users, now with caching
 @with_db_connection
 @cache_query
 def fetch_users_with_cache(conn, query):
@@ -62,10 +62,10 @@ def fetch_users_with_cache(conn, query):
     cursor.execute(query)
     return cursor.fetchall()
 
-# ✅ First call — triggers DB access
+# First call — triggers DB access
 users = fetch_users_with_cache(query="SELECT * FROM users")
 print(users)
 
-# ✅ Second call — uses cached result
+# Second call — uses cached result
 users_again = fetch_users_with_cache(query="SELECT * FROM users")
 print(users_again)
