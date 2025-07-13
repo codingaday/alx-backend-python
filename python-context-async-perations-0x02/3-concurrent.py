@@ -1,7 +1,8 @@
+
 import asyncio
 import aiosqlite
 
-# Async function to fetch all users from DB
+# Fetch all users
 async def async_fetch_users():
     async with aiosqlite.connect("users.db") as db:
         cursor = await db.execute("SELECT * FROM users")
@@ -10,7 +11,7 @@ async def async_fetch_users():
         for user in users:
             print(user)
 
-# Async function to fetch users older than 40
+# Fetch users older than 40
 async def async_fetch_older_users():
     async with aiosqlite.connect("users.db") as db:
         cursor = await db.execute("SELECT * FROM users WHERE age > 40")
@@ -19,13 +20,13 @@ async def async_fetch_older_users():
         for user in older_users:
             print(user)
 
-# This function runs both fetch functions at the same time
+# Run both queries concurrently
 async def fetch_concurrently():
     await asyncio.gather(
         async_fetch_users(),
         async_fetch_older_users()
     )
 
-# Main entry point: kicks off the concurrent tasks
+# Kick off async run
 if __name__ == "__main__":
     asyncio.run(fetch_concurrently())
