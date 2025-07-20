@@ -58,7 +58,9 @@ class TestGithubOrgClient(unittest.TestCase):
         based on a mocked org payload.
         """
         # Define a mock payload for the .org property
-        test_payload = {"repos_url": "https://api.github.com/orgs/test_org/repos"}
+        test_payload = {
+            "repos_url": "https://api.github.com/orgs/test_org/repos"
+        }
 
         # Patch the 'org' property of GithubOrgClient
         # We use patch.object with new_callable=PropertyMock to mock a property
