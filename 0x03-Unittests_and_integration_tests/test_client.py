@@ -1,84 +1,50 @@
 #!/usr/bin/env python3
 """
-GitHub Org Client
+Unit tests for the GithubOrgClient class.
 """
-from typing import (
-    List,
-    Dict,
-)
-
-from utils import (
-    get_json,
-    access_nested_map,
-    memoize,
-)
+import unittest
+from unittest.mock import patch, Mock
+from parameterized import parameterized
+from client import GithubOrgClient
 
 
-class GithubOrgClient:
+class TestGithubOrgClient(unittest.TestCase):
     """
-    Client for interacting with the GitHub Organizations API.
+    Tests the GithubOrgClient class.
     """
-    ORG_URL = "https://api.github.com/orgs/{org}"
 
-    def __init__(self, org_name: str) -> None:
+    @parameterized.expand([
+        ("google",),
+        ("abc",),
+    ])
+    @patch('client.get_json')
+    def test_org(self, org_name: str, mock_get_json: Mock) -> None:
         """
-        Initializes a GithubOrgClient instance.
-
-        Parameters:
-            org_name (str): The name of the GitHub organization.
-        """
-        self._org_name = org_name
-
-    @memoize
-    def org(self) -> Dict:
-        """
-        Returns the organization's information from the GitHub API, memoized.
-        """
-        return get_json(self.ORG_URL.format(org=self._org_name))
-
-    @property
-    def _public_repos_url(self) -> str:
-        """
-        Returns the URL for the organization's public repositories.
-        """
-        return self.org["repos_url"]
-
-    @memoize
-    def repos_payload(self) -> Dict:
-        """
-        Returns the payload of public repositories from the GitHub API, memoized.
-        """
-        return get_json(self._public_repos_url)
-
-    def public_repos(self, license: str = None) -> List[str]:
-        """
-        Returns a list of public repository names for the organization,
-        optionally filtered by license.
+        Tests that GithubOrgClient.org returns the correct value
+        and that get_json is called once with the expected argument.
 
         Parameters:
-            license (str, optional): The license key to filter repositories by.
-                                     Defaults to None, returning all public repos.
+            org_name (str): The name of the organization to test.
+            mock_get_json (unittest.mock.Mock): The mock object for get_json.
         """
-        json_payload = self.repos_payload
-        public_repos = [
-            repo["name"] for repo in json_payload
-            if license is None or self.has_license(repo, license)
-        ]
+        # Configure the mock_get_json to return a specific payload.
+        # This payload simulates the response from the GitHub API.
+        mock_payload = {"login": org_name, "id": 12345, "public_repos": 100}
+        mock_get_json.return_value = mock_payload
 
-        return public_repos
+        # Instantiate GithubOrgClient with the parameterized org_name
+        client = GithubOrgClient(org_name)
 
-    @staticmethod
-    def has_license(repo: Dict[str, Dict], license_key: str) -> bool:
-        """
-        Checks if a given repository has a specific license.
+        # Call the .org property. This should trigger the call to get_json.
+        result = client.org
 
-        Parameters:
-            repo (dict): A dictionary representing a repository.
-            license_key (str): The license key to check for.
-        """
-        assert license_key is not None, "license_key cannot be None"
-        try:
-            has_license = access_nested_map(repo, ("license", "key")) == license_key
-        except KeyError:
-            return False
-        return has_license
+        # Assertions:
+        # 1. Test that get_json was called exactly once with the expected URL.
+        # The expected URL is constructed based on the org_name.
+        expected_url = f"https://api.github.com/orgs/{org_name}"
+        mock_get_json.assert_called_once_with(expected_url)
+
+        # 2. Test that the output of .org is equal to the mock_payload.
+        # This verifies that the client correctly processes the mocked response.
+        self.assertEqual(result, mock_payload)
+
