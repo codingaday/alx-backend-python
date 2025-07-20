@@ -130,13 +130,13 @@ class TestGithubOrgClient(unittest.TestCase):
     @parameterized.expand([
         ({"license": {"key": "my_license"}}, "my_license", True),
         ({"license": {"key": "other_license"}}, "my_license", False),
-        ({"license": None}, "my_license", False), 
-        ({}, "my_license", False),  # Added case: no license key
+        ({"license": None}, "my_license", False),
+        ({}, "my_license", False)
     ])
+
     def test_has_license(self, repo: dict, license_key: str, expected: bool) 
         """
         Tests that GithubOrgClient.has_license returns the correct value.
-
         Parameters:
             repo (dict): A dictionary representing a repository.
             license_key (str): The license key to check for.
@@ -271,5 +271,4 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         # Assert that the result matches the apache2_repos from the fixture
         self.assertEqual(result, self.apache2_repos)
 
-        # Assert that requests.get was called correctly.
-        # Similar to test_public_repos, the side_effect handles the data.
+      
