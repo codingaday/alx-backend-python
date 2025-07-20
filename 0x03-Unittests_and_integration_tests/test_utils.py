@@ -26,7 +26,7 @@ class TestAccessNestedMap(unittest.TestCase):
     ])
     def test_access_nested_map(self, nested_map, path, expected_result):
         """
-        Tests that access_nested_map returns the expected result for valid inputs.
+        Tests that access_nested_map returns the expected result.
 
         Parameters:
             nested_map (dict): The nested dictionary to access.
@@ -48,8 +48,7 @@ class TestAccessNestedMap(unittest.TestCase):
     def test_access_nested_map_exception(self, nested_map, path,
                                          expected_exception_message):
         """
-        Tests that access_nested_map raises a KeyError with the expected message
-        for invalid access paths.
+        Tests that access_nested_map raises a KeyError.
 
         Parameters:
             nested_map (dict): The nested dictionary to attempt access on.
