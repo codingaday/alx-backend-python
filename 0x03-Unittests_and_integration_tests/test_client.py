@@ -49,7 +49,7 @@ class TestGithubOrgClient(unittest.TestCase):
         mock_get_json.assert_called_once_with(expected_url)
 
         # 2. Test that the output of .org is equal to the mock_payload.
-        # This verifies that the client correctly processes the mocked response.
+        # Here correctly processes the mocked response.
         self.assertEqual(result, mock_payload)
 
     def test_public_repos_url(self) -> None:
