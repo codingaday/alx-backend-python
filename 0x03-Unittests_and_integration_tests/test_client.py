@@ -235,3 +235,41 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         Stops the patcher after all integration tests in this class have run.
         """
         cls.get_patcher.stop()
+
+    def test_public_repos(self) -> None:
+        """
+        Tests that GithubOrgClient.public_repos returns the expected list
+        of repositories based on the mocked fixtures.
+        """
+        # Instantiate GithubOrgClient for the current parameterized test case
+        client = GithubOrgClient(self.org_payload["login"])
+
+        # Call public_repos without a license filter
+        result = client.public_repos()
+
+        # Assert that the result matches the expected_repos from the fixture
+        self.assertEqual(result, self.expected_repos)
+
+        # Assert that requests.get was called correctly.
+        # It should have been called for the org URL and then for the repos URL.
+        # The exact call count depends on memoization, but the side_effect
+        # ensures the correct data is returned.
+        # We can check the calls to mock_get directly if needed,
+        # but the primary check is the result of public_repos.
+
+    def test_public_repos_with_license(self) -> None:
+        """
+        Tests that GithubOrgClient.public_repos with a license argument
+        returns the expected list of repositories based on the mocked fixtures.
+        """
+        # Instantiate GithubOrgClient for the current parameterized test case
+        client = GithubOrgClient(self.org_payload["login"])
+
+        # Call public_repos with the "apache-2.0" license filter
+        result = client.public_repos(license="apache-2.0")
+
+        # Assert that the result matches the apache2_repos from the fixture
+        self.assertEqual(result, self.apache2_repos)
+
+        # Assert that requests.get was called correctly.
+        # Similar to test_public_repos, the side_effect handles the data.
