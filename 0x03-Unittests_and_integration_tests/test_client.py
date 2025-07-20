@@ -49,7 +49,7 @@ class TestGithubOrgClient(unittest.TestCase):
         mock_get_json.assert_called_once_with(expected_url)
 
         # 2. Test that the output of .org is equal to the mock_payload.
-        # This verifies that the client correctly processes the mocked response.
+        # This verifies that the client correctly processes.
         self.assertEqual(result, mock_payload)
 
     def test_public_repos_url(self) -> None:
@@ -130,12 +130,12 @@ class TestGithubOrgClient(unittest.TestCase):
     @parameterized.expand([
         ({"license": {"key": "my_license"}}, "my_license", True),
         ({"license": {"key": "other_license"}}, "my_license", False),
-        ({"license": None}, "my_license", False),  # Added case: license is None
+        ({"license": None}, "my_license", False), 
         ({}, "my_license", False),  # Added case: no license key
     ])
-    def test_has_license(self, repo: dict, license_key: str, expected: bool) -> None:
+    def test_has_license(self, repo: dict, license_key: str, expected: bool) 
         """
-        Tests that GithubOrgClient.has_license returns the correct boolean value.
+        Tests that GithubOrgClient.has_license returns the correct value.
 
         Parameters:
             repo (dict): A dictionary representing a repository.
@@ -224,7 +224,7 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
                 # This is the URL for the repositories payload
                 return Mock(json=lambda: cls.repos_payload)
             else:
-                # Fallback for unexpected URLs, though not expected in this test
+                # Fallback for unexpected URLs.
                 raise ValueError(f"Unexpected URL: {url}")
 
         cls.mock_get.side_effect = side_effect_func
@@ -251,7 +251,7 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         self.assertEqual(result, self.expected_repos)
 
         # Assert that requests.get was called correctly.
-        # It should have been called for the org URL and then for the repos URL.
+        # It should have been called for the org URL.
         # The exact call count depends on memoization, but the side_effect
         # ensures the correct data is returned.
         # We can check the calls to mock_get directly if needed,
