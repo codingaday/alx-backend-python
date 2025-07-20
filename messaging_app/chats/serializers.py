@@ -4,10 +4,29 @@ from .models import User, Conversation, Message
 # A simple User serializer for nesting within other serializers
 # This avoids including sensitive info like password and prevents circular imports
 class UserSerializer(serializers.ModelSerializer):
+    # Example of serializers.SerializerMethodField to add a custom computed field
+    full_name = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ['user_id', 'first_name', 'last_name', 'email', 'phone_number', 'role']
-        read_only_fields = ['user_id', 'email', 'role'] # user_id and email are often read-only after creation
+        fields = ['user_id', 'first_name', 'last_name', 'email', 'phone_number', 'role', 'full_name']
+        read_only_fields = ['user_id', 'email', 'role', 'full_name'] # user_id, email, role, and full_name are read-only
+
+    def get_full_name(self, obj):
+        """
+        Returns the full name of the user.
+        """
+        return f"{obj.first_name} {obj.last_name}"
+
+    def validate_phone_number(self, value):
+        """
+        Example of custom validation using serializers.ValidationError.
+        Ensures the phone number, if provided, is numeric.
+        """
+        if value and not value.isdigit():
+            raise serializers.ValidationError("Phone number must contain only digits.")
+        # You could add more complex validation here, e.g., length checks, regex patterns
+        return value
 
 # Message Serializer
 class MessageSerializer(serializers.ModelSerializer):
