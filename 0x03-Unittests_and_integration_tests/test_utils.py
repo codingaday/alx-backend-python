@@ -5,14 +5,15 @@ utils module.
 """
 import unittest
 from parameterized import parameterized
-from unittest.mock import patch, Mock  # Import patch and Mock for mocking
-from utils import access_nested_map, get_json, memoize  # Import all functions
+# Import patch and Mock for mocking, added for later tasks
+from unittest.mock import patch, Mock
+# Import all functions to be tested, modified for later tasks
+from utils import access_nested_map, get_json, memoize
 
 
 class TestAccessNestedMap(unittest.TestCase):
     """
-    Tests the access_nested_map function for various valid inputs
-    and exception cases.
+    Tests the access_nested_map function for various valid inputs.
     """
 
     @parameterized.expand([
@@ -37,6 +38,7 @@ class TestAccessNestedMap(unittest.TestCase):
         # Assert that the actual result matches the expected result
         self.assertEqual(actual_result, expected_result)
 
+    # --- Start of Task 1: Exception testing for access_nested_map ---
     @parameterized.expand([
         # Test case 1: Empty map, trying to access 'a'
         ({}, ("a",), "a"),  # Expected key 'a' in error message
@@ -56,15 +58,15 @@ class TestAccessNestedMap(unittest.TestCase):
                                               message.
         """
         # Use assertRaises as a context manager to check for exceptions
-        # This block will pass if a KeyError is raised inside it
         with self.assertRaises(KeyError) as cm:
             access_nested_map(nested_map, path)
 
         # After the block, cm.exception holds the raised exception object
-        # We then check if the message of that exception matches the expected key
         self.assertEqual(str(cm.exception), f"'{expected_exception_message}'")
+    # --- End of Task 1 ---
 
 
+# --- Start of Task 2: Testing get_json ---
 class TestGetJson(unittest.TestCase):
     """
     Tests the get_json function from utils module.
@@ -105,8 +107,10 @@ class TestGetJson(unittest.TestCase):
 
         # 2. Test that the output of get_json is equal to test_payload
         self.assertEqual(actual_result, test_payload)
+# --- End of Task 2 (get_json) ---
 
 
+# --- Start of Task 2: Testing memoize ---
 class TestMemoize(unittest.TestCase):
     """
     Tests the memoize decorator from utils module.
@@ -153,3 +157,4 @@ class TestMemoize(unittest.TestCase):
             # 2. Test that the correct result is returned both times
             self.assertEqual(result1, 42)
             self.assertEqual(result2, 42)
+# --- End of Task 2 (memoize) ---
