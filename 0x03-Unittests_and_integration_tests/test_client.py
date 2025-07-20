@@ -29,7 +29,11 @@ class TestGithubOrgClient(unittest.TestCase):
         """
         # Configure the mock_get_json to return a specific payload.
         # This payload simulates the response from the GitHub API.
-        mock_payload = {"login": org_name, "id": 12345, "public_repos": 100}
+        mock_payload = {
+            "login": org_name,
+            "id": 12345,
+            "public_repos": 100
+        }
         mock_get_json.return_value = mock_payload
 
         # Instantiate GithubOrgClient with the parameterized org_name
@@ -87,7 +91,7 @@ class TestGithubOrgClient(unittest.TestCase):
         mock_repos_payload = [
             {"name": "repo1", "license": {"key": "mit"}},
             {"name": "repo2", "license": {"key": "apache-2.0"}},
-            {"name": "repo3"}, # No license
+            {"name": "repo3"},  # No license
             {"name": "repo4", "license": {"key": "mit"}},
         ]
 
@@ -120,4 +124,3 @@ class TestGithubOrgClient(unittest.TestCase):
             # 3. Test that the list of repos is what we expect
             expected_repos = ["repo1", "repo2", "repo3", "repo4"]
             self.assertEqual(result, expected_repos)
-
