@@ -45,11 +45,11 @@ class TestGithubOrgClient(unittest.TestCase):
         # Assertions:
         # 1. Test that get_json was called exactly once with the expected URL.
         # The expected URL is constructed based on the org_name.
-        expected_url = "https://api.github.com/orgs/{}".format(org_name)
+        expected_url = ("https://api.github.com/orgs/{}".format(org_name))
         mock_get_json.assert_called_once_with(expected_url)
 
         # 2. Test that the output of .org is equal to the mock_payload.
-        # Here correctly processes the mocked response.
+        # This verifies that the client correctly processes the mocked response.
         self.assertEqual(result, mock_payload)
 
     def test_public_repos_url(self) -> None:
@@ -126,3 +126,22 @@ class TestGithubOrgClient(unittest.TestCase):
             # 3. Test that the list of repos is what we expect
             expected_repos = ["repo1", "repo2", "repo3", "repo4"]
             self.assertEqual(result, expected_repos)
+
+    @parameterized.expand([
+        ({"license": {"key": "my_license"}}, "my_license", True),
+        ({"license": {"key": "other_license"}}, "my_license", False),
+        ({"license": None}, "my_license", False),  # Added case: license is None
+        ({}, "my_license", False),  # Added case: no license key
+    ])
+    def test_has_license(self, repo: dict, license_key: str, expected: bool) -> None:
+        """
+        Tests that GithubOrgClient.has_license returns the correct boolean value.
+
+        Parameters:
+            repo (dict): A dictionary representing a repository.
+            license_key (str): The license key to check for.
+            expected (bool): The expected boolean result.
+        """
+        result = GithubOrgClient.has_license(repo, license_key)
+        self.assertEqual(result, expected)
+
