@@ -10,13 +10,10 @@ from unittest.mock import patch, Mock
 # Import all functions to be tested, modified for later tasks
 from utils import access_nested_map, get_json, memoize
 
-
-
 class TestAccessNestedMap(unittest.TestCase):
     """
     Tests the access_nested_map function for various valid inputs.
     """
-
     @parameterized.expand([
         ({"a": 1}, ("a",), 1),
         ({"a": {"b": 2}}, ("a",), {"b": 2}),
