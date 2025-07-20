@@ -157,4 +157,3 @@ class TestMemoize(unittest.TestCase):
             # 2. Test that the correct result is returned both times
             self.assertEqual(result1, 42)
             self.assertEqual(result2, 42)
-# --- End of Task 2 (memoize) ---
