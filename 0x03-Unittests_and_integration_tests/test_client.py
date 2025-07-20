@@ -77,3 +77,47 @@ class TestGithubOrgClient(unittest.TestCase):
             # 2. Test that the result of _public_repos_url is the expected one
             self.assertEqual(result, test_payload["repos_url"])
 
+    @patch('client.get_json')
+    def test_public_repos(self, mock_get_json: Mock) -> None:
+        """
+        Tests that GithubOrgClient.public_repos returns the expected list of
+        repositories and that the relevant mocks are called correctly.
+        """
+        # Define a mock payload for repos_payload
+        mock_repos_payload = [
+            {"name": "repo1", "license": {"key": "mit"}},
+            {"name": "repo2", "license": {"key": "apache-2.0"}},
+            {"name": "repo3"}, # No license
+            {"name": "repo4", "license": {"key": "mit"}},
+        ]
+
+        # Configure the mock_get_json to return our mock_repos_payload
+        mock_get_json.return_value = mock_repos_payload
+
+        # Patch the _public_repos_url property as a context manager
+        with patch('client.GithubOrgClient._public_repos_url',
+                   new_callable=PropertyMock) as mock_public_repos_url:
+            # Configure the mocked _public_repos_url to return a dummy URL
+            # The actual value doesn't matter here as get_json is mocked
+            mock_public_repos_url.return_value = "http://dummy.url/repos"
+
+            # Instantiate GithubOrgClient
+            client = GithubOrgClient("test_org")
+
+            # Call the public_repos method
+            # This should trigger calls to _public_repos_url (memoized)
+            # and then get_json (also memoized via repos_payload)
+            result = client.public_repos()
+
+            # Assertions:
+            # 1. Test that _public_repos_url was accessed
+            mock_public_repos_url.assert_called_once()
+
+            # 2. Test that get_json was called exactly once
+            # (It's called by repos_payload, which is memoized)
+            mock_get_json.assert_called_once()
+
+            # 3. Test that the list of repos is what we expect
+            expected_repos = ["repo1", "repo2", "repo3", "repo4"]
+            self.assertEqual(result, expected_repos)
+
