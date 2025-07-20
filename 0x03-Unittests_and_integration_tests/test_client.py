@@ -206,5 +206,32 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         """
         Sets up the class-level mocks for integration tests.
         Mocks requests.get to return predefined payloads based on URL.
-        
         """
+        # Create a patcher for 'requests.get'
+        cls.get_patcher = patch('requests.get')
+        # Start the patcher and get the mock object
+        cls.mock_get = cls.get_patcher.start()
+
+        # Define the side_effect for mock_get.
+        # This function will be called whenever requests.get is invoked.
+        # It should return a Mock object that has a .json() method,
+        # which in turn returns the correct payload based on the URL.
+        def side_effect_func(url):
+            if url == cls.org_payload["repos_url"].replace("/repos", ""):
+                # This is the URL for the organization itself
+                return Mock(json=lambda: cls.org_payload)
+            elif url == cls.org_payload["repos_url"]:
+                # This is the URL for the repositories payload
+                return Mock(json=lambda: cls.repos_payload)
+            else:
+                # Fallback for unexpected URLs, though not expected in this test
+                raise ValueError(f"Unexpected URL: {url}")
+
+        cls.mock_get.side_effect = side_effect_func
+
+    @classmethod
+    def tearDownClass(cls):
+        """
+        Stops the patcher after all integration tests in this class have run.
+        """
+        cls.get_patcher.stop()
