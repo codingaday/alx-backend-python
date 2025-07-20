@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """
-Unit tests for the access_nested_map, get_json, and memoize functions from utils module.
+Unit tests for the access_nested_map, get_json, and memoize functions from
+utils module.
 """
 import unittest
 from parameterized import parameterized
-from unittest.mock import patch, Mock # Import patch and Mock for mocking
-from utils import access_nested_map, get_json, memoize # Import all functions to be tested
+from unittest.mock import patch, Mock  # Import patch and Mock for mocking
+from utils import access_nested_map, get_json, memoize  # Import all functions to be tested
+
 
 class TestAccessNestedMap(unittest.TestCase):
     """
@@ -37,11 +39,12 @@ class TestAccessNestedMap(unittest.TestCase):
 
     @parameterized.expand([
         # Test case 1: Empty map, trying to access 'a'
-        ({}, ("a",), "a"), # Expected key 'a' to be in the error message
+        ({}, ("a",), "a"),  # Expected key 'a' to be in the error message
         # Test case 2: Map with 'a':1, trying to access 'b' via 'a'
-        ({"a": 1}, ("a", "b"), "b"), # Expected key 'b' to be in the error message
+        ({"a": 1}, ("a", "b"), "b"),  # Expected key 'b' to be in the error message
     ])
-    def test_access_nested_map_exception(self, nested_map, path, expected_exception_message):
+    def test_access_nested_map_exception(self, nested_map, path,
+                                         expected_exception_message):
         """
         Tests that access_nested_map raises a KeyError with the expected message
         for invalid access paths.
@@ -72,7 +75,7 @@ class TestGetJson(unittest.TestCase):
         # Test case 2: Holberton.io with a different payload
         ("http://holberton.io", {"payload": False}),
     ])
-    @patch('requests.get') # Decorator to patch requests.get before the test runs
+    @patch('requests.get')  # Decorator to patch requests.get before the test runs
     def test_get_json(self, test_url, test_payload, mock_get):
         """
         Tests that utils.get_json returns the expected result and
