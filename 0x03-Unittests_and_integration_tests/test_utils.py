@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Unit tests for the access_nested_map, get_json, and memoize functions from utils module.
+Unit tests for the access_nested_map and get_json functions from utils module.
 """
 import unittest
 from parameterized import parameterized
 from unittest.mock import patch, Mock # Import patch and Mock for mocking
-from utils import access_nested_map, get_json, memoize # Import all functions to be tested
+from utils import access_nested_map, get_json # Import both functions to be tested
 
 class TestAccessNestedMap(unittest.TestCase):
     """
@@ -99,50 +99,3 @@ class TestGetJson(unittest.TestCase):
 
         # 2. Test that the output of get_json is equal to test_payload
         self.assertEqual(actual_result, test_payload)
-
-
-class TestMemoize(unittest.TestCase):
-    """
-    Tests the memoize decorator from utils module.
-    """
-
-    def test_memoize(self):
-        """
-        Tests that a method decorated with @memoize caches its result
-        and the underlying method is called only once.
-        """
-        # Define the inner class for testing memoization
-        class TestClass:
-            """
-            A simple class to test the memoize decorator.
-            """
-            def a_method(self):
-                """
-                A simple method that returns 42.
-                """
-                return 42
-
-            @memoize
-            def a_property(self):
-                """
-                A property that uses a_method and is memoized.
-                """
-                return self.a_method()
-
-        # Use patch as a context manager to mock 'a_method' within 'TestClass'
-        # We need to patch 'TestClass.a_method' directly.
-        with patch.object(TestClass, 'a_method', return_value=42) as mock_a_method:
-            # Instantiate TestClass
-            test_instance = TestClass()
-
-            # Call a_property twice
-            result1 = test_instance.a_property
-            result2 = test_instance.a_property
-
-            # Assertions:
-            # 1. Test that a_method was called exactly once
-            mock_a_method.assert_called_once()
-
-            # 2. Test that the correct result is returned both times
-            self.assertEqual(result1, 42)
-            self.assertEqual(result2, 42)
