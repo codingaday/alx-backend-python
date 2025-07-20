@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
-Unit tests for the access_nested_map function from utils module.
+Unit tests for the access_nested_map and get_json functions from utils module.
 """
 import unittest
 from parameterized import parameterized
-from utils import access_nested_map # Import the function to be tested
+from unittest.mock import patch, Mock # Import patch and Mock for mocking
+from utils import access_nested_map, get_json # Import both functions to be tested
 
 class TestAccessNestedMap(unittest.TestCase):
     """
@@ -58,3 +59,43 @@ class TestAccessNestedMap(unittest.TestCase):
         # After the block, cm.exception holds the raised exception object
         # We then check if the message of that exception matches the expected key
         self.assertEqual(str(cm.exception), f"'{expected_exception_message}'")
+
+
+class TestGetJson(unittest.TestCase):
+    """
+    Tests the get_json function from utils module.
+    """
+
+    @parameterized.expand([
+        # Test case 1: Example.com with a simple payload
+        ("http://example.com", {"payload": True}),
+        # Test case 2: Holberton.io with a different payload
+        ("http://holberton.io", {"payload": False}),
+    ])
+    @patch('requests.get') # Decorator to patch requests.get before the test runs
+    def test_get_json(self, test_url, test_payload, mock_get):
+        """
+        Tests that utils.get_json returns the expected result and
+        that requests.get is called correctly.
+
+        Parameters:
+            test_url (str): The URL to pass to get_json.
+            test_payload (dict): The expected JSON payload to be returned.
+            mock_get (unittest.mock.Mock): The mock object for requests.get,
+                                          injected by the @patch decorator.
+        """
+        # Configure the mock_get object:
+        # When mock_get is called, it should return a mock object.
+        # This returned mock object should have a .json() method.
+        # When .json() is called on that mock object, it should return test_payload.
+        mock_get.return_value.json.return_value = test_payload
+
+        # Call the function under test
+        actual_result = get_json(test_url)
+
+        # Assertions:
+        # 1. Test that the mocked requests.get was called exactly once with test_url
+        mock_get.assert_called_once_with(test_url)
+
+        # 2. Test that the output of get_json is equal to test_payload
+        self.assertEqual(actual_result, test_payload)
