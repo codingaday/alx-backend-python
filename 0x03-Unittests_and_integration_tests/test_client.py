@@ -4,7 +4,7 @@ Unit tests for the GithubOrgClient class.
 """
 import unittest
 from unittest.mock import patch, Mock, PropertyMock
-from parameterized import parameterized
+from parameterized import parameterized, parameterized_class
 from client import GithubOrgClient
 
 
@@ -145,3 +145,93 @@ class TestGithubOrgClient(unittest.TestCase):
         result = GithubOrgClient.has_license(repo, license_key)
         self.assertEqual(result, expected)
 
+
+# Fixture data for TestIntegrationGithubOrgClient
+# These would typically come from a fixtures.py file or similar
+# For this task, they are defined directly for clarity.
+google_org_payload = {
+    "login": "google",
+    "id": 1,
+    "repos_url": "https://api.github.com/orgs/google/repos"
+}
+google_repos_payload = [
+    {"name": "google-cloud-sdk", "license": {"key": "apache-2.0"}},
+    {"name": "kubernetes", "license": {"key": "apache-2.0"}},
+    {"name": "tensorflow", "license": {"key": "apache-2.0"}},
+    {"name": "go-cloud", "license": {"key": "bsd-3-clause"}},
+    {"name": "flutter", "license": {"key": "bsd-3-clause"}},
+]
+google_expected_repos = [
+    "google-cloud-sdk", "kubernetes", "tensorflow", "go-cloud", "flutter"
+]
+google_apache2_repos = [
+    "google-cloud-sdk", "kubernetes", "tensorflow"
+]
+
+abc_org_payload = {
+    "login": "abc",
+    "id": 2,
+    "repos_url": "https://api.github.com/orgs/abc/repos"
+}
+abc_repos_payload = [
+    {"name": "abc-repo1", "license": {"key": "mit"}},
+    {"name": "abc-repo2", "license": {"key": "gpl-3.0"}}
+]
+abc_expected_repos = ["abc-repo1", "abc-repo2"]
+abc_apache2_repos = []
+
+
+@parameterized_class([
+    {
+        "org_payload": google_org_payload,
+        "repos_payload": google_repos_payload,
+        "expected_repos": google_expected_repos,
+        "apache2_repos": google_apache2_repos,
+    },
+    {
+        "org_payload": abc_org_payload,
+        "repos_payload": abc_repos_payload,
+        "expected_repos": abc_expected_repos,
+        "apache2_repos": abc_apache2_repos,
+    },
+])
+class TestIntegrationGithubOrgClient(unittest.TestCase):
+    """
+    Integration tests for the GithubOrgClient.public_repos method.
+    This class uses parameterized_class to load fixtures and mocks
+    external HTTP requests.
+    """
+    @classmethod
+    def setUpClass(cls):
+        """
+        Sets up the class-level mocks for integration tests.
+        Mocks requests.get to return predefined payloads based on URL.
+        """
+        # Create a patcher for 'requests.get'
+        cls.get_patcher = patch('requests.get')
+        # Start the patcher and get the mock object
+        cls.mock_get = cls.get_patcher.start()
+
+        # Define the side_effect for mock_get.
+        # This function will be called whenever requests.get is invoked.
+        # It should return a Mock object that has a .json() method,
+        # which in turn returns the correct payload based on the URL.
+        def side_effect_func(url):
+            if url == cls.org_payload["repos_url"].replace("/repos", ""):
+                # This is the URL for the organization itself
+                return Mock(json=lambda: cls.org_payload)
+            elif url == cls.org_payload["repos_url"]:
+                # This is the URL for the repositories payload
+                return Mock(json=lambda: cls.repos_payload)
+            else:
+                # Fallback for unexpected URLs, though not expected in this test
+                raise ValueError(f"Unexpected URL: {url}")
+
+        cls.mock_get.side_effect = side_effect_func
+
+    @classmethod
+    def tearDownClass(cls):
+        """
+        Stops the patcher after all integration tests in this class have run.
+        """
+        cls.get_patcher.stop()
