@@ -13,7 +13,7 @@ from utils import access_nested_map, get_json, memoize
 
 class TestAccessNestedMap(unittest.TestCase):
     """
-    Tests the access_nested_map function for various valid inputs.
+    - Tests the access_nested_map function for various valid inputs.
     """
 
     @parameterized.expand([
@@ -48,7 +48,7 @@ class TestAccessNestedMap(unittest.TestCase):
     def test_access_nested_map_exception(self, nested_map, path,
                                          expected_exception_message):
         """
-        Tests that access_nested_map raises a KeyError.
+        - Tests that access_nested_map raises a KeyError.
 
         Parameters:
             nested_map (dict): The nested dictionary to attempt access on.
