@@ -6,7 +6,7 @@ utils module.
 import unittest
 from parameterized import parameterized
 from unittest.mock import patch, Mock  # Import patch and Mock for mocking
-from utils import access_nested_map, get_json, memoize  # Import all functions to be tested
+from utils import access_nested_map, get_json, memoize  # Import all functions
 
 
 class TestAccessNestedMap(unittest.TestCase):
@@ -91,14 +91,16 @@ class TestGetJson(unittest.TestCase):
         # Configure the mock_get object:
         # When mock_get is called, it should return a mock object.
         # This returned mock object should have a .json() method.
-        # When .json() is called on that mock object, it should return test_payload.
+        # When .json() is called on that mock object, it should return
+        # test_payload.
         mock_get.return_value.json.return_value = test_payload
 
         # Call the function under test
         actual_result = get_json(test_url)
 
         # Assertions:
-        # 1. Test that the mocked requests.get was called exactly once with test_url
+        # 1. Test that the mocked requests.get was called exactly once with
+        # test_url
         mock_get.assert_called_once_with(test_url)
 
         # 2. Test that the output of get_json is equal to test_payload
@@ -135,7 +137,8 @@ class TestMemoize(unittest.TestCase):
 
         # Use patch as a context manager to mock 'a_method' within 'TestClass'
         # We need to patch 'TestClass.a_method' directly.
-        with patch.object(TestClass, 'a_method', return_value=42) as mock_a_method:
+        with patch.object(TestClass, 'a_method',
+                          return_value=42) as mock_a_method:
             # Instantiate TestClass
             test_instance = TestClass()
 
