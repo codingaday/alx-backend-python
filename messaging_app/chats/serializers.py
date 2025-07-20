@@ -40,6 +40,9 @@ class MessageSerializer(serializers.ModelSerializer):
         queryset=User.objects.all(), source='sender', write_only=True
     )
 
+    # Explicitly define message_body as a CharField
+    message_body = serializers.CharField(required=True, allow_blank=False, allow_null=False)
+
     class Meta:
         model = Message
         fields = ['message_id', 'sender', 'sender_id', 'conversation', 'message_body', 'sent_at']
