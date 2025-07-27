@@ -4,13 +4,19 @@ from django.contrib.auth import get_user_model
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
 
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from .permissions import IsParticipantOrSender
+
 User = get_user_model()
 
 class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.all()
     serializer_class = ConversationSerializer
     filter_backends = [filters.SearchFilter]
+    permission_classes = [IsParticipantOrSender]
     search_fields = ['participants__username']
+    
 
     def get_queryset(self):
         return self.queryset.filter(participants=self.request.user)
@@ -23,6 +29,7 @@ class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
     filter_backends = [filters.OrderingFilter]
+    permission_classes = [IsParticipantOrSender]
     ordering_fields = ['sent_at']
 
     def get_queryset(self):
