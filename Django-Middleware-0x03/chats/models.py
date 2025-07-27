@@ -2,46 +2,48 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 import uuid
 
-class User(AbstractUser):
-    user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    phone_number = models.CharField(max_length=15, blank=True, null=True)
-    email = models.EmailField(unique=True)  # Override to make email required and unique
-    password = models.CharField(max_length=128)  # Explicitly defined (handled by Django auth)
-    first_name = models.CharField(max_length=150, blank=True)
-    last_name = models.CharField(max_length=150, blank=True)
+# Create your models here.
 
-    class Meta:
-        db_table = 'auth_user'  # Use same table as built-in User
-        verbose_name = 'User'
-        verbose_name_plural = 'Users'
+class User(AbstractUser):
+    """Custom User model extending Django's AbstractUser"""
+    ROLE_CHOICES = [
+        ('guest', 'Guest'),
+        ('host', 'Host'),
+        ('admin', 'Admin'),
+    ]
+
+    user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    first_name = models.CharField(max_length=150, null=False)
+    last_name = models.CharField(max_length=150, null=False)
+    email = models.EmailField(unique=True, null=False)
+    phone_number = models.CharField(max_length=20, null=True, blank=True)
+    password = models.CharField(max_length=128)
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, null=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # Remove username field (using email instead)
+    username = None
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'role']
 
     def __str__(self):
-        return f"{self.username} ({self.email})"
+        return f"{self.first_name} {self.last_name} ({self.email})"
 
 class Conversation(models.Model):
     conversation_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     participants = models.ManyToManyField(User, related_name='conversations')
     created_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        verbose_name = 'Conversation'
-        verbose_name_plural = 'Conversations'
-
     def __str__(self):
-        participant_names = ", ".join([user.username for user in self.participants.all()])
-        return f"Conversation {self.conversation_id} ({participant_names})"
+        return f'Conversation {self.conversation_id}'
 
 class Message(models.Model):
     message_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE)
     message_body = models.TextField()
     sent_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        verbose_name = 'Message'
-        verbose_name_plural = 'Messages'
-        ordering = ['sent_at']
-
     def __str__(self):
-        return f"Message from {self.sender.username} at {self.sent_at}"
+        return f'Message from {self.sender.email} at {self.sent_at}'
+

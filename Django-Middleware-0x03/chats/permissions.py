@@ -1,39 +1,29 @@
 from rest_framework import permissions
+from .models import Conversation
 
-class IsParticipantOrSender(permissions.BasePermission):
-    
+class IsOwner(permissions.BasePermission):
+    """
+    Custom permission to allow only owners to view their own messages/conversations.
+    """
+
     def has_object_permission(self, request, view, obj):
-        user = request.user
-        if hasattr(obj, 'participants'):
-            return user in obj.participants.all()
-        if hasattr(obj, 'sender'):
-            return obj.sender == user or user in obj.conversation.participants.all()
-        return False
-    
-
-
-
-from rest_framework import permissions
+        return obj.owner == request.user
 
 class IsParticipantOfConversation(permissions.BasePermission):
     """
-    Allow only authenticated users who are participants of the conversation
-    to send, view, update, and delete messages.
+    Allows access only to authenticated users who are participants in the conversation.
     """
 
     def has_permission(self, request, view):
-        # Only authenticated users
+        # Require user to be authenticated
         return request.user and request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
-        # For Conversation objects
-        if hasattr(obj, 'participants'):
-            return request.user in obj.participants.all()
-        # For Message objects
-        if hasattr(obj, 'conversation'):
-            # Allow only participants for unsafe methods
-            if request.method in ["PUT", "PATCH", "DELETE"]:
+        # obj here should be a Message or Conversation instance
+        if request.method in ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']:
+            if hasattr(obj, 'conversation'):  
                 return request.user in obj.conversation.participants.all()
-            # Allow viewing if participant
-            return request.user in obj.conversation.participants.all()
+            elif isinstance(obj, Conversation):  
+                return request.user in obj.participants.all()
         return False
+
