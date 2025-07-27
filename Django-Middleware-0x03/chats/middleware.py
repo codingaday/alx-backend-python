@@ -3,6 +3,24 @@ import logging
 from datetime import datetime, time, timedelta
 from django.http import HttpResponseForbidden
 
+
+from django.http import HttpResponseForbidden
+
+class RolepermissionMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Example: restrict access to URLs containing '/admin-action/' or '/moderator-action/'
+        if '/admin-action/' in request.path or '/moderator-action/' in request.path:
+            user = getattr(request, 'user', None)
+            if not user or not user.is_authenticated:
+                return HttpResponseForbidden("You must be logged in as admin or moderator to perform this action.")
+            # Check if user is admin or moderator
+            if not (user.is_superuser or getattr(user, 'is_moderator', False)):
+                return HttpResponseForbidden("You do not have permission to perform this action.")
+        return self.get_response(request)
+
 class RequestLoggingMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
