@@ -10,10 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-import environ
-env = environ.Env()
-environ.Env.read_env()
-SECRET_KEY = env('SECRET_KEY', default='django-insecure-!k)rxza2ku7yha6wrl7&$-l)090eeukilglxpa7su0d6d_dh)&')
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -24,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-!k)rxza2ku7yha6wrl7&$-l)090eeukilglxpa7su0d6d_dh)&'
+SECRET_KEY = 'django-insecure-fc=&@4^(&&$(tc1*dlfe4t4q*86o#+*wed$jk=m@r!cfkf3+z3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -42,35 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'chats',
+    'rest_framework_simplejwt',
     'django_filters',
+    'chats',
 ]
-
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'chats.permissions.IsParticipantOfConversation',
-    ],
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
-      
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 20,
-    'DEFAULT_FILTER_BACKENDS': [
-        'django_filters.rest_framework.DjangoFilterBackend',
-        'rest_framework.filters.OrderingFilter',
-        'rest_framework.filters.SearchFilter',
-    ],
-}
-
-REST_FRAMEWORK = {
-    # ...other settings...
-    'DEFAULT_PAGINATION_CLASS': 'chats.pagination.MessagePagination',
-    'PAGE_SIZE': 20,
-}
-
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -153,3 +124,31 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'chats.pagination.MessagePagination', # This includes PageNumberPagination
+    'PAGE_SIZE': 20,
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+}
+
+AUTH_USER_MODEL = 'chats.User'
+
+# JWT Settings
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+}
+

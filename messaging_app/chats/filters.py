@@ -1,11 +1,13 @@
 import django_filters
 from .models import Message
+from django.utils import timezone
 
 class MessageFilter(django_filters.FilterSet):
-    sender = django_filters.CharFilter(field_name='sender__username', lookup_expr='iexact')
-    sent_after = django_filters.DateTimeFilter(field_name='sent_at', lookup_expr='gte')
-    sent_before = django_filters.DateTimeFilter(field_name='sent_at', lookup_expr='lte')
+    start_date = django_filters.DateTimeFilter(field_name="sent_at", lookup_expr='gte')
+    end_date = django_filters.DateTimeFilter(field_name="sent_at", lookup_expr='lte')
+    sender = django_filters.CharFilter(field_name='sender__email', lookup_expr='icontains')
 
     class Meta:
         model = Message
-        fields = ['sender', 'sent_after', 'sent_before']
+        fields = ['sender', 'start_date', 'end_date']
+
