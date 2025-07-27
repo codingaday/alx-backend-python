@@ -9,6 +9,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .permissions import IsParticipantOfConversation
 
+from .filters import MessageFilter
+
 User = get_user_model()
 
 class ConversationViewSet(viewsets.ModelViewSet):
@@ -28,9 +30,10 @@ class ConversationViewSet(viewsets.ModelViewSet):
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
-    filter_backends = [filters.OrderingFilter]
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter, 'django_filters.rest_framework.DjangoFilterBackend']  # <-- Add DjangoFilterBackend
     permission_classes = [IsAuthenticated, IsParticipantOfConversation]
     ordering_fields = ['sent_at']
+    filterset_class = MessageFilter  # <-- Add this line
 
     def get_queryset(self):
         conversation_id = self.kwargs.get('conversation_id')
