@@ -121,7 +121,8 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-    def __init__(self, get_response):
+
+def __init__(self, get_response):
         self.get_response = get_response
         log_path = os.path.join(os.path.dirname(__file__), '..', 'requests.log')
         log_path = os.path.abspath(log_path)
@@ -133,7 +134,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
             self.logger.addHandler(handler)
         self.logger.setLevel(logging.INFO)
 
-    def __call__(self, request):
+def __call__(self, request):
         user = request.user if hasattr(request, "user") and request.user.is_authenticated else "Anonymous"
         log_message = f"{datetime.now()} - User: {user} - Path: {request.path}"
         self.logger.info(log_message)
@@ -141,21 +142,21 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
         return response
 
 class RestrictAccessByTimeMiddleware:
-    def __init__(self, get_response):
-        self.get_response = get_response
+        def __init__(self, get_response):
+            self.get_response = get_response
 
-    def __call__(self, request):
-        now = datetime.now().time()
-        if not (time(18, 0) <= now <= time(21, 0)):
-            return HttpResponseForbidden("Access to chat is restricted at this time (allowed between 6PM and 9PM).")
-        return self.get_response(request)
+        def __call__(self, request):
+            now = datetime.now().time()
+            if not (time(18, 0) <= now <= time(21, 0)):
+                return HttpResponseForbidden("Access to chat is restricted at this time (allowed between 6PM and 9PM).")
+            return self.get_response(request)
 
 class OffensiveLanguageMiddleware:
-    def __init__(self, get_response):
-        self.get_response = get_response
-        self.ip_message_log = {}
+        def __init__(self, get_response):
+            self.get_response = get_response
+            self.ip_message_log = {}
 
-    def __call__(self, request):
+def __call__(self, request):
         # Only limit POST requests to the message endpoint
         if request.method == "POST" and "/messages" in request.path:
             ip = self.get_client_ip(request)
@@ -172,7 +173,7 @@ class OffensiveLanguageMiddleware:
             self.ip_message_log[ip].append(now)
         return self.get_response(request)
 
-    def get_client_ip(self, request):
+def get_client_ip(self, request):
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
         if x_forwarded_for:
             ip = x_forwarded_for.split(',')[0]
@@ -180,7 +181,7 @@ class OffensiveLanguageMiddleware:
             ip = request.META.get('REMOTE_ADDR')
         return ip
 
-    def cleanup_old_entries(self, ip, now):
+def cleanup_old_entries(self, ip, now):
         # Remove timestamps older than 1 minute
         if ip in self.ip_message_log:
             self.ip_message_log[ip] = [
@@ -189,6 +190,3 @@ class OffensiveLanguageMiddleware:
             ]
 
 
-["MIDDLEWARE", "chats.middleware.RequestLoggingMiddleware"]
-
-'chats.middleware.RestrictAccessByTimeMiddleware',
