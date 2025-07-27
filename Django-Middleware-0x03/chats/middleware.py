@@ -1,12 +1,14 @@
+import os
 import logging
 from datetime import datetime
 
 class RequestLoggingMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
-        # Set up logger to write to requests.log
+        log_path = os.path.join(os.path.dirname(__file__), '..', 'requests.log')
+        log_path = os.path.abspath(log_path)
         self.logger = logging.getLogger("request_logger")
-        handler = logging.FileHandler("requests.log")
+        handler = logging.FileHandler(log_path)
         formatter = logging.Formatter('%(message)s')
         handler.setFormatter(formatter)
         if not self.logger.hasHandlers():
