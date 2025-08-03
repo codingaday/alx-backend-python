@@ -1,0 +1,61 @@
+from rest_framework import viewsets, permissions, status, filters
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from .models import Conversation, Message
+from .serializers import ConversationSerializer, MessageSerializer
+from django.shortcuts import get_object_or_404
+
+# Create your views here.
+class ConversationViewSet(viewsets.ModelViewSet):
+    queryset = Conversation.objects.all()
+    serializer_class = ConversationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['participants__email']
+
+    def get_queryset(self):
+        return self.request.user.conversations.all()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @action(detail=True, methods=['post'])
+    def send_message(self, request, pk=None):
+        conversation = self.get_object()
+        serializer = MessageSerializer(data=request.data, context={
+            'request': request,
+            'conversation': conversation
+        })
+        serializer.is_valid(raise_exception=True)
+        serializer.save(sender=request.user, conversation=conversation)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class MessageViewSet(viewsets.ModelViewSet):
+    serializer_class = MessageSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['message_body']
+
+    def get_queryset(self):
+        return Message.objects.filter(
+            conversation__participants=self.request.user
+        ).order_by('-sent_at')
+
+    def get_conversation(self):
+        """Helper method to get and validate the conversation"""
+        return get_object_or_404(
+            Conversation,
+            pk=self.kwargs['conversation_pk'],
+            participants=self.request.user
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(
+            sender=self.request.user,
+            conversation=self.get_conversation()
+        )
+
