@@ -9,7 +9,7 @@ class Message(models.Model):
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
-    # Added fields for Task 2 (Edit tracking)
+    # Task 2 fields: edit tracking
     edited = models.BooleanField(default=False)
     edited_at = models.DateTimeField(null=True, blank=True)
     edited_by = models.ForeignKey(
@@ -32,7 +32,6 @@ class Notification(models.Model):
     def __str__(self):
         return f'Notification for {self.user} about message {self.message.id}'
 
-# Added model for Task 2 (Message edit history)
 class MessageHistory(models.Model):
     message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='history')
     previous_content = models.TextField()
