@@ -10,7 +10,7 @@ services:
       MYSQL_DB: messaging_db
       MYSQL_PASSWORD: messaging_pass
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql   # <--- Added volume here for data persistence
     ports:
       - "3306:3306"
 
@@ -30,4 +30,4 @@ services:
       - db
 
 volumes:
-  mysql_data:
+  mysql_data:    # <--- Named volume definition
