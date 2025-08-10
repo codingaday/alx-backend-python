@@ -6,7 +6,7 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQLUSER: messaging_user
+      MYSQL_USER: messaging_user
       MYSQL_DB: messaging_db
       MYSQL_PASSWORD: messaging_pass
     volumes:
@@ -22,7 +22,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      MYSQLUSER: messaging_user
+      MYSQL_USER: messaging_user
       MYSQL_DB: messaging_db
       MYSQL_PASSWORD: messaging_pass
       MYSQL_HOST: db
