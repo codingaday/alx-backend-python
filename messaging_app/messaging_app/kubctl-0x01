@@ -1,0 +1,66 @@
+
+#!/bin/bash
+
+# Exit on any error
+set -e
+
+echo "Starting Kubernetes scaling and load testing..."
+
+# Function to check if a command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Scale the messaging-app deployment to 3 replicas
+echo "Scaling messaging-app deployment to 3 replicas..."
+kubectl scale deployment messaging-app --replicas=3
+
+# Wait for pods to be ready
+echo "Waiting for pods to be ready..."
+sleep 10
+
+# Verify pods are running
+echo "Listing running pods..."
+kubectl get pods -l app=messaging-app
+
+# Install wrk if not present (for Ubuntu)
+if ! command_exists wrk; then
+    echo "Installing wrk for load testing..."
+    sudo apt update
+    sudo apt install -y wrk
+else
+    echo "wrk is already installed."
+fi
+
+# Enable metrics-server if not already enabled
+echo "Checking metrics-server status..."
+if ! kubectl get pods -n kube-system | grep metrics-server > /dev/null; then
+    echo "Enabling metrics-server addon..."
+    minikube addons enable metrics-server
+    echo "Waiting for metrics-server to be ready..."
+    sleep 30
+else
+    echo "metrics-server is already enabled."
+fi
+
+# Start port-forwarding to the messaging-app-service in the background
+echo "Starting port-forwarding to messaging-app-service..."
+kubectl port-forward service/messaging-app-service 8000:80 &
+PORT_FORWARD_PID=$!
+sleep 5  # Wait for port-forwarding to establish
+
+# Perform load testing with wrk
+echo "Running load test with wrk..."
+wrk -t 2 -c 100 -d 30s http://localhost:8000
+echo "Load test complete."
+
+# Stop port-forwarding
+echo "Stopping port-forwarding..."
+kill $PORT_FORWARD_PID
+
+# Monitor resource usage
+echo "Checking resource usage with kubectl top..."
+kubectl top pods -l app=messaging-app
+
+echo "Scaling and load testing complete!"
+
