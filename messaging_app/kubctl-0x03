@@ -1,0 +1,42 @@
+
+#!/bin/bash
+
+# Exit on any error
+set -e
+
+echo "Starting rolling update for messaging-app-blue..."
+
+# Apply updated blue deployment to trigger rolling update
+echo "Applying updated blue deployment..."
+kubectl apply -f blue_deployment.yaml
+
+# Monitor rollout status
+echo "Monitoring rollout status..."
+kubectl rollout status deployment/messaging-app-blue
+
+# Start port-forwarding to messaging-app-service in the background for testing
+echo "Starting port-forwarding to messaging-app-service..."
+kubectl port-forward service/messaging-app-service 8000:80 &
+PORT_FORWARD_PID=$!
+sleep 5  # Wait for port-forwarding to establish
+
+# Test for downtime by continuously sending curl requests
+echo "Testing for downtime with curl..."
+for i in {1..30}; do
+    curl -s -f http://localhost:8000/api/ > /dev/null && echo "Request $i: OK" || echo "Request $i: FAILED"
+    sleep 1
+done
+
+# Stop port-forwarding
+echo "Stopping port-forwarding..."
+kill $PORT_FORWARD_PID
+
+# Verify updated pods
+echo "Listing updated pods..."
+kubectl get pods -l app=messaging-app,version=blue
+
+# Check pod descriptions to confirm image version
+echo "Verifying pod image versions..."
+kubectl describe pods -l app=messaging-app,version=blue | grep Image:
+
+echo "Rolling update complete!"
