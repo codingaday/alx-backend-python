@@ -1,0 +1,43 @@
+
+#!/bin/bash
+
+# Exit on any error
+set -e
+
+echo "Starting blue-green deployment..."
+
+# Apply blue deployment
+echo "Deploying blue version..."
+kubectl apply -f blue_deployment.yaml
+
+# Apply green deployment
+echo "Deploying green version..."
+kubectl apply -f green_deployment.yaml
+
+# Apply service (pointing to blue initially)
+echo "Applying service (routing to blue)..."
+kubectl apply -f kubeservice.yaml
+
+# Wait for pods to be ready
+echo "Waiting for pods to be ready..."
+sleep 20
+
+# Verify blue pods
+echo "Listing blue pods..."
+kubectl get pods -l app=messaging-app,version=blue
+
+# Verify green pods
+echo "Listing green pods..."
+kubectl get pods -l app=messaging-app,version=green
+
+# Check logs for green pods to verify no errors
+echo "Checking logs for green pods..."
+GREEN_PODS=$(kubectl get pods -l app=messaging-app,version=green -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}')
+for POD in $GREEN_PODS; do
+    echo "Logs for $POD:"
+    kubectl logs $POD
+done
+
+
+
+echo "Blue-green deployment complete! Verify green logs before switching traffic manually."
