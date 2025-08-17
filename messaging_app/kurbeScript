@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# Exit on any error
+set -e
+
+echo "Starting Kubernetes cluster setup..."
+
+# Function to check if a command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Check if Minikube is installed
+if ! command_exists minikube; then
+    echo "Minikube not found. Installing Minikube..."
+    # Install Minikube (example for Ubuntu/Debian, adjust for other OS)
+    curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+    sudo install minikube-linux-amd64 /usr/local/bin/minikube
+    rm minikube-linux-amd64
+    echo "Minikube installed successfully."
+else
+    echo "Minikube is already installed."
+fi
+
+# Check if kubectl is installed
+if ! command_exists kubectl; then
+    echo "kubectl not found. Installing kubectl..."
+    # Install kubectl (example for Ubuntu/Debian, adjust for other OS)
+    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+    chmod +x kubectl
+    sudo mv kubectl /usr/local/bin/
+    echo "kubectl installed successfully."
+else
+    echo "kubectl is already installed."
+fi
+
+# Start Minikube cluster
+echo "Starting Minikube cluster..."
+minikube start --driver=docker
+
+# Verify cluster is running
+echo "Checking cluster status..."
+kubectl cluster-info
+
+# Retrieve available pods
+echo "Listing available pods..."
+kubectl get pods --all-namespaces
+
+echo "Kubernetes cluster setup complete!"
