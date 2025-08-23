@@ -19,15 +19,19 @@ pipeline {
 
     stage('Set up Python venv & install deps') {
       steps {
-        dir('messaging_app') {
+        dir('messaging_app/messaging_app') {
           sh '''
             set -euxo pipefail
             python3 --version
             python3 -m venv .venv
             . .venv/bin/activate
             python3 -m pip install --upgrade pip
+            # Install dependencies from both possible locations
             if [ -f requirements.txt ]; then
               pip3 install -r requirements.txt
+            fi
+            if [ -f ../requirements.txt ]; then
+              pip3 install -r ../requirements.txt
             fi
             pip3 install pytest pytest-cov
           '''
@@ -37,7 +41,7 @@ pipeline {
 
     stage('Run tests') {
       steps {
-        dir('messaging_app') {
+        dir('messaging_app/messaging_app') {
           sh '''
             set -euxo pipefail
             . .venv/bin/activate
@@ -51,12 +55,10 @@ pipeline {
       }
       post {
         always {
-          junit 'messaging_app/reports/junit.xml'
-          archiveArtifacts artifacts: 'messaging_app/reports/**', fingerprint: true
+          junit 'messaging_app/messaging_app/reports/junit.xml'
+          archiveArtifacts artifacts: 'messaging_app/messaging_app/reports/**', fingerprint: true
         }
       }
     }
   }
 }
-
-
