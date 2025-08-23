@@ -10,24 +10,26 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        checkout scm
+        git branch: 'main',
+            url: 'https://github.com/codingaday/alx-backend-python.git',
+            credentialsId: 'github-credentials'
         sh 'ls -R .'
       }
     }
 
     stage('Set up Python venv & install deps') {
       steps {
-        dir('messaging_app/messaging_app') {
+        dir('messaging_app') {
           sh '''
             set -euxo pipefail
             python3 --version
             python3 -m venv .venv
             . .venv/bin/activate
-            python -m pip install --upgrade pip
+            python3 -m pip install --upgrade pip
             if [ -f requirements.txt ]; then
-              pip install -r requirements.txt
+              pip3 install -r requirements.txt
             fi
-            pip install pytest pytest-cov
+            pip3 install pytest pytest-cov
           '''
         }
       }
@@ -35,7 +37,7 @@ pipeline {
 
     stage('Run tests') {
       steps {
-        dir('messaging_app/messaging_app') {
+        dir('messaging_app') {
           sh '''
             set -euxo pipefail
             . .venv/bin/activate
@@ -49,11 +51,12 @@ pipeline {
       }
       post {
         always {
-          junit 'messaging_app/messaging_app/reports/junit.xml'
-          archiveArtifacts artifacts: 'messaging_app/messaging_app/reports/**', fingerprint: true
+          junit 'messaging_app/reports/junit.xml'
+          archiveArtifacts artifacts: 'messaging_app/reports/**', fingerprint: true
         }
       }
     }
   }
 }
+
 
