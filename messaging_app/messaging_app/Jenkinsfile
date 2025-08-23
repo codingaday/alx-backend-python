@@ -1,0 +1,59 @@
+pipeline {
+  agent any
+  options {
+    timestamps()
+    ansiColor('xterm')
+    skipDefaultCheckout(true)
+  }
+  triggers { }  // Manual only
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+        sh 'ls -R .'
+      }
+    }
+
+    stage('Set up Python venv & install deps') {
+      steps {
+        dir('messaging_app/messaging_app') {
+          sh '''
+            set -euxo pipefail
+            python3 --version
+            python3 -m venv .venv
+            . .venv/bin/activate
+            python -m pip install --upgrade pip
+            if [ -f requirements.txt ]; then
+              pip install -r requirements.txt
+            fi
+            pip install pytest pytest-cov
+          '''
+        }
+      }
+    }
+
+    stage('Run tests') {
+      steps {
+        dir('messaging_app/messaging_app') {
+          sh '''
+            set -euxo pipefail
+            . .venv/bin/activate
+            mkdir -p reports
+            pytest -q \
+              --maxfail=1 --disable-warnings \
+              --junitxml=reports/junit.xml \
+              --cov=. --cov-report=xml:reports/coverage.xml
+          '''
+        }
+      }
+      post {
+        always {
+          junit 'messaging_app/messaging_app/reports/junit.xml'
+          archiveArtifacts artifacts: 'messaging_app/messaging_app/reports/**', fingerprint: true
+        }
+      }
+    }
+  }
+}
+
