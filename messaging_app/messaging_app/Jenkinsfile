@@ -7,6 +7,10 @@ pipeline {
   }
   triggers { }  // Manual only
 
+  environment {
+    DOCKER_IMAGE = 'abebedev/messaging-app' // replace with your Docker Hub username
+  }
+
   stages {
     stage('Checkout') {
       steps {
@@ -27,8 +31,8 @@ pipeline {
             . .venv/bin/activate
             python3 -m pip install --upgrade pip
 
-            # ✅ Explicitly install from messaging_app/requirements.txt
-            pip3 install -r ../requirements.txt
+            # Install from requirements.txt
+            pip3 install -r ../requirements.txt || true
             pip3 install -r messaging_app/requirements.txt || true
 
             pip3 install pytest pytest-cov
@@ -57,6 +61,34 @@ pipeline {
           archiveArtifacts artifacts: 'messaging_app/messaging_app/reports/**', fingerprint: true
         }
       }
+    }
+
+    stage('Build Docker Image') {
+      steps {
+        dir('messaging_app') {
+          script {
+            echo "Building Docker image ${DOCKER_IMAGE}:${env.BUILD_ID}"
+            dockerImage = docker.build("${DOCKER_IMAGE}:${env.BUILD_ID}")
+          }
+        }
+      }
+    }
+
+    stage('Push Docker Image') {
+      steps {
+        script {
+          docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
+            dockerImage.push()          // push tag: BUILD_ID
+            dockerImage.push('latest')  // also push latest
+          }
+        }
+      }
+    }
+  }
+
+  post {
+    always {
+      cleanWs()
     }
   }
 }
