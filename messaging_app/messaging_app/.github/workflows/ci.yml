@@ -52,7 +52,21 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r ../requirements.txt || true
         pip install -r messaging_app/requirements.txt || true
-        pip install pytest pytest-cov
+        pip install pytest pytest-cov flake8
+
+    # New Step: Run Flake8 Linting
+    - name: Run Flake8 Linting
+      working-directory: messaging_app/messaging_app
+      run: |
+        . .venv/bin/activate
+        echo "Running flake8 linting..."
+        flake8 . --exit-zero --tee > lint_report.txt
+        cat lint_report.txt
+        if grep -q "E" lint_report.txt; then
+          echo "Linting errors detected! Failing the build."
+          exit 1
+        fi
+      continue-on-error: false
 
     - name: Run tests
       working-directory: messaging_app/messaging_app
@@ -69,3 +83,10 @@ jobs:
       with:
         name: test-reports
         path: messaging_app/messaging_app/reports/
+
+    # New Step: Upload Flake8 Lint Report
+    - name: Upload Flake8 Lint Report
+      uses: actions/upload-artifact@v3
+      with:
+        name: lint-report
+        path: messaging_app/messaging_app/lint_report.txt
